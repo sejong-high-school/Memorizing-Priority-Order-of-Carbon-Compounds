@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>유기화학 작용기 우선순위 마스터 퀴즈</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts Inter & Noto Sans KR -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans KR', 'sans-serif'],
+            mono: ['Fira Code', 'monospace']
+          },
+          colors: {
+            chem: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+              900: '#134e4a'
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* 커스텀 스크롤바 및 화학식 폰트 스타일링 */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    .chem-text {
+      font-family: 'Fira Code', monospace;
+      letter-spacing: 0.05em;
+    }
+    .glass-panel {
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans selection:bg-teal-500 selection:text-white flex flex-col justify-between">
+
+  <header class="w-full glass-panel sticky top-0 z-40 border-b border-slate-800 px-4 py-3 sm:px-8">
+    <div class="max-w-5xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-teal-500/20">
+          <i class="fa-solid fa-flask-vial text-white text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            작용기 우선순위 마스터
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30">무한 훈련 모드</span>
+          </h1>
+          <p class="text-xs text-slate-400">구조식을 보고 우선순위, 명칭, 접미사/접두사를 입력하세요</p>
+        </div>
+      </div>
+
+      <!-- 상단 컨트롤 버튼 -->
+      <div class="flex items-center space-x-2">
+        <button id="summaryBtn" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-teal-300 border border-teal-500/30 transition shadow-sm">
+          <i class="fa-solid fa-table-list"></i>
+          <span class="hidden sm:inline">전체 우선순위표</span>
+        </button>
+        <button id="resetStatsBtn" class="p-2 rounded-lg text-xs text-slate-400 hover:text-red-400 hover:bg-slate-800 transition" title="통계 초기화">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-4xl w-full mx-auto p-4 sm:p-6 flex-1 flex flex-col justify-center gap-5">
+    
+    <!-- 통계 카드 헤더 -->
+    <section class="grid grid-cols-4 gap-2 sm:gap-4">
+      <div class="glass-panel p-3 rounded-xl border border-slate-800 text-center">
+        <p class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">푼 문제</p>
+        <p id="totalCount" class="text-xl sm:text-2xl font-bold text-white mt-0.5">0</p>
+      </div>
+      <div class="glass-panel p-3 rounded-xl border border-slate-800 text-center">
+        <p class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">연속 정답</p>
+        <p id="streakCount" class="text-xl sm:text-2xl font-bold text-amber-400 mt-0.5">0 🔥</p>
+      </div>
+      <div class="glass-panel p-3 rounded-xl border border-slate-800 text-center">
+        <p class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">최고 기록</p>
+        <p id="bestStreak" class="text-xl sm:text-2xl font-bold text-emerald-400 mt-0.5">0</p>
+      </div>
+      <div class="glass-panel p-3 rounded-xl border border-slate-800 text-center">
+        <p class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">정답률</p>
+        <p id="accuracyRate" class="text-xl sm:text-2xl font-bold text-teal-400 mt-0.5">0%</p>
+      </div>
+    </section>
+
+    <section class="glass-panel rounded-2xl p-5 sm:p-7 border border-slate-800/80 shadow-2xl relative overflow-hidden flex flex-col items-center">
+      <div class="absolute -top-12 -right-12 w-48 h-48 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-12 -left-12 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <!-- 문제 카드 헤더 -->
+      <div class="w-full flex justify-between items-center text-xs mb-3 text-slate-400">
+        <span class="inline-flex items-center gap-1.5 font-medium px-2.5 py-1 rounded-md bg-slate-800/80 border border-slate-700/50">
+          <i class="fa-solid fa-atom text-teal-400"></i> 미지 작용기 #<span id="questionNumDisplay">1</span>
+        </span>
+        <button id="hintBtn" class="hover:text-amber-300 text-slate-400 transition flex items-center gap-1 font-medium bg-slate-800/60 px-2 py-1 rounded-md border border-slate-700/40">
+          <i class="fa-regular fa-lightbulb text-amber-400"></i> 힌트 보기
+        </button>
+      </div>
+
+      <!-- 화학 구조식 표시 윈도우 -->
+      <div class="w-full min-h-[170px] sm:min-h-[190px] bg-slate-900/90 rounded-xl border border-slate-700/60 flex flex-col items-center justify-center p-4 relative group shadow-inner">
+        <!-- SVG 그래픽 렌더링 컨테이너 -->
+        <div id="structureSvgContainer" class="w-full flex items-center justify-center py-2">
+          <!-- 동적 SVG 삽입 -->
+        </div>
+
+        <!-- 텍스트 축약식 보조 태그 -->
+        <div id="condensedFormula" class="mt-2 text-xs sm:text-sm font-mono text-teal-300/80 bg-slate-950/60 px-3 py-1 rounded-md border border-teal-500/20">
+          R-COOH
+        </div>
+
+        <!-- 힌트 배너 (초기 숨김) -->
+        <div id="hintBanner" class="hidden absolute bottom-2 bg-amber-500/20 border border-amber-500/40 text-amber-200 text-xs px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-2">
+          <i class="fa-solid fa-info-circle"></i>
+          <span id="hintText">힌트 내용</span>
+        </div>
+      </div>
+
+      <form id="quizForm" class="w-full mt-6 space-y-4" onsubmit="return false;">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <!-- 1. 작용기 이름 -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
+              <span>1. 작용기 이름 (한글 또는 영문)</span>
+              <span id="nameStatus" class="text-xs"></span>
+            </label>
+            <div class="relative">
+              <input type="text" id="inputName" autocomplete="off" placeholder="예: 카복실산, 알데하이드, ester" 
+                class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition">
+            </div>
+          </div>
+
+          <!-- 2. 우선순위 번호 -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
+              <span>2. 우선순위 번호 (1 ~ 17)</span>
+              <span id="priorityStatus" class="text-xs"></span>
+            </label>
+            <div class="relative">
+              <input type="number" id="inputPriority" min="1" max="17" placeholder="숫자만 입력 (예: 1)" 
+                class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition font-mono">
+            </div>
+          </div>
+
+          <!-- 3. 접미사 (Suffix) -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
+              <span>3. 접미사 (Suffix, 없으면 '없음' or '-')</span>
+              <span id="suffixStatus" class="text-xs"></span>
+            </label>
+            <div class="relative">
+              <input type="text" id="inputSuffix" autocomplete="off" placeholder="예: -oic acid, -al, 없음" 
+                class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition font-mono">
+            </div>
+          </div>
+
+          <!-- 4. 접두사 (Prefix) -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
+              <span>4. 접두사 (Prefix, 없으면 '없음' or '-')</span>
+              <span id="prefixStatus" class="text-xs"></span>
+            </label>
+            <div class="relative">
+              <input type="text" id="inputPrefix" autocomplete="off" placeholder="예: oxo-, hydroxy-, cyano-, -" 
+                class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition font-mono">
+            </div>
+          </div>
+        </div>
+
+        <!-- 액션 버튼 행 -->
+        <div class="pt-2 flex flex-col sm:flex-row items-center gap-3">
+          <button type="submit" id="submitBtn" class="w-full sm:flex-1 py-3 px-4 rounded-xl font-bold text-sm bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-400 hover:to-teal-500 text-slate-950 shadow-lg shadow-teal-500/20 active:scale-[0.99] transition flex items-center justify-center gap-2">
+            <span>정답 확인 (Enter)</span>
+            <i class="fa-solid fa-circle-check"></i>
+          </button>
+          <button type="button" id="nextBtn" class="hidden w-full sm:w-auto py-3 px-6 rounded-xl font-bold text-sm bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 active:scale-[0.99] transition flex items-center justify-center gap-2">
+            <span>다음 문제 (Space / Enter)</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </form>
+
+      <div id="feedbackBox" class="w-full mt-4 p-4 rounded-xl border hidden transition-all">
+        <!-- 동적 피드백 생성 -->
+      </div>
+    </section>
+
+    <!-- 빠른 팁 안내 -->
+    <div class="text-center text-xs text-slate-500 space-y-1">
+      <p>💡 <span class="text-slate-400 font-medium">유연한 채점:</span> 하이픈(-) 유무, 띄어쓰기, 한글/영어(예: 카복실산/카르복실산/carboxylic acid) 모두 정답으로 인정됩니다.</p>
+    </div>
+  </main>
+
+  <div id="summaryModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-6">
+    <div class="glass-panel w-full max-w-4xl max-h-[90vh] rounded-2xl border border-slate-700 shadow-2xl flex flex-col overflow-hidden">
+      <!-- 모달 헤더 -->
+      <div class="px-5 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/80">
+        <div class="flex items-center gap-2.5">
+          <i class="fa-solid fa-book-open text-teal-400 text-lg"></i>
+          <h2 class="text-base sm:text-lg font-bold text-white">IUPAC 작용기 우선순위 및 명명법 정리표</h2>
+        </div>
+        <button id="closeModalBtn" class="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800 transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- 모달 테이블 내용 -->
+      <div class="overflow-y-auto p-4 sm:p-6">
+        <div class="overflow-x-auto rounded-lg border border-slate-800">
+          <table class="w-full text-left text-xs sm:text-sm border-collapse">
+            <thead class="bg-slate-900/90 text-slate-300 font-semibold uppercase tracking-wider border-b border-slate-800">
+              <tr>
+                <th class="py-3 px-3 sm:px-4 text-center w-16">우선순위</th>
+                <th class="py-3 px-3 sm:px-4">작용기 이름</th>
+                <th class="py-3 px-3 sm:px-4 font-mono">구조식 요약</th>
+                <th class="py-3 px-3 sm:px-4 font-mono">접미사 (Suffix)</th>
+                <th class="py-3 px-3 sm:px-4 font-mono">접두사 (Prefix)</th>
+              </tr>
+            </thead>
+            <tbody id="summaryTableBody" class="divide-y divide-slate-800/80 text-slate-300">
+              <!-- JS 동적 생성 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 모달 푸터 -->
+      <div class="px-5 py-3 border-t border-slate-800 bg-slate-900/60 flex justify-end">
+        <button id="modalOkBtn" class="px-4 py-2 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-medium text-xs sm:text-sm transition">
+          닫기 및 계속 풀기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 푸터 정보 -->
+  <footer class="w-full text-center py-4 text-xs text-slate-600 border-t border-slate-900">
+    유기화학 작용기 IUPAC 명명법 연습 랩 • 필기 데이터 기반 자동 채점 엔진
+  </footer>
+
+  <script>
+    /* 
+      손글씨 필기 1번~17번 작용기 데이터베이스
+      한글/영문 다양한 표기법, 접미사/접두사 변형 포괄
+    */
+    const FUNCTIONAL_GROUPS = [
+      {
+        priority: 1,
+        names: ['카복실산', '카르복실산', 'carboxylic acid', 'carboxylicacid'],
+        primaryName: '카복실산 (Carboxylic acid)',
+        condensed: 'R-C(=O)OH (R-COOH)',
+        suffix: ['-oic acid', 'oic acid'],
+        prefix: ['carboxy-', 'carboxy', '없음', '-', 'none'],
+        notes: '가장 높은 명명 우선순위를 갖습니다. 산 성질을 띠는 카보닐 유도체입니다.',
+        svg: `
+          <svg viewBox="0 0 320 120" class="h-24 sm:h-28 max-w-full">
+            <style>
+              .atom { fill: #f8fafc; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-r { fill: #38bdf8; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-o { fill: #f43f5e; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .bond { stroke: #cbd5e1; stroke-width: 3.5; stroke-linecap: round; }
+            </style>
+            <!-- R - C -->
+            <text x="45" y="80" class="atom-r" text-anchor="middle">R</text>
+            <line x1="68" y1="73" x2="120" y2="73" class="bond" />
+            <!-- C -->
+            <text x="135" y="80" class="atom" text-anchor="middle">C</text>
+            <!-- C = O (Double bond going up-right) -->
+            <line x1="140" y1="58" x2="175" y2="28" class="bond" />
+            <line x1="148" y1="67" x2="183" y2="37" class="bond" />
+            <text x="195" y="30" class="atom-o" text-anchor="middle">O</text>
+            <!-- C - OH (Single bond going down-right) -->
+            <line x1="150" y1="78" x2="195" y2="92" class="bond" />
+            <text x="235" y="99" class="atom-o" text-anchor="middle">OH</text>
+          </svg>
+        `
+      },
+      {
+        priority: 2,
+        names: ['산 무수물', '산무수물', '산안하이드라이드', 'acid anhydride', 'anhydride'],
+        primaryName: '산 무수물 (Acid anhydride)',
+        condensed: "R-C(=O)-O-C(=O)-R'",
+        suffix: ['-oic anhydride', 'oic anhydride'],
+        prefix: ['없음', '-', 'none'],
+        notes: '카복실산 두 분자에서 물이 빠지며 결합한 유도체입니다.',
+        svg: `
+          <svg viewBox="0 0 380 120" class="h-24 sm:h-28 max-w-full">
+            <style>
+              .atom { fill: #f8fafc; font-family: 'Fira Code', monospace; font-size: 22px; font-weight: 700; }
+              .atom-r { fill: #38bdf8; font-family: 'Fira Code', monospace; font-size: 22px; font-weight: 700; }
+              .atom-o { fill: #f43f5e; font-family: 'Fira Code', monospace; font-size: 22px; font-weight: 700; }
+              .bond { stroke: #cbd5e1; stroke-width: 3.5; stroke-linecap: round; }
+            </style>
+            <!-- R-C -->
+            <text x="35" y="78" class="atom-r" text-anchor="middle">R</text>
+            <line x1="55" y1="72" x2="95" y2="72" class="bond" />
+            <text x="110" y="78" class="atom" text-anchor="middle">C</text>
+            <!-- =O -->
+            <line x1="110" y1="58" x2="110" y2="28" class="bond" />
+            <line x1="118" y1="58" x2="118" y2="28" class="bond" />
+            <text x="114" y="24" class="atom-o" text-anchor="middle">O</text>
+            <!-- - O - -->
+            <line x1="125" y1="72" x2="170" y2="72" class="bond" />
+            <text x="185" y="78" class="atom-o" text-anchor="middle">O</text>
+            <line x1="200" y1="72" x2="245" y2="72" class="bond" />
+            <!-- C' -->
+            <text x="260" y="78" class="atom" text-anchor="middle">C</text>
+            <!-- =O -->
+            <line x1="260" y1="58" x2="260" y2="28" class="bond" />
+            <line x1="268" y1="58" x2="268" y2="28" class="bond" />
+            <text x="264" y="24" class="atom-o" text-anchor="middle">O</text>
+            <!-- - R' -->
+            <line x1="275" y1="72" x2="315" y2="72" class="bond" />
+            <text x="335" y="78" class="atom-r" text-anchor="middle">R'</text>
+          </svg>
+        `
+      },
+      {
+        priority: 3,
+        names: ['에스터', '에스테르', 'ester'],
+        primaryName: '에스터 (Ester)',
+        condensed: "R-C(=O)-O-R'",
+        suffix: ['-oate', 'oate'],
+        prefix: ['alkoxycarbonyl-', 'alkoxycarbonyl', '없음', '-', 'none'],
+        notes: '과일 향 등의 원인이 되는 대표적인 카보닐 유도체입니다.',
+        svg: `
+          <svg viewBox="0 0 330 120" class="h-24 sm:h-28 max-w-full">
+            <style>
+              .atom { fill: #f8fafc; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-r { fill: #38bdf8; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-o { fill: #f43f5e; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .bond { stroke: #cbd5e1; stroke-width: 3.5; stroke-linecap: round; }
+            </style>
+            <text x="45" y="80" class="atom-r" text-anchor="middle">R</text>
+            <line x1="68" y1="73" x2="120" y2="73" class="bond" />
+            <text x="135" y="80" class="atom" text-anchor="middle">C</text>
+            <!-- =O -->
+            <line x1="140" y1="58" x2="175" y2="28" class="bond" />
+            <line x1="148" y1="67" x2="183" y2="37" class="bond" />
+            <text x="195" y="30" class="atom-o" text-anchor="middle">O</text>
+            <!-- - O - R' -->
+            <line x1="150" y1="78" x2="195" y2="92" class="bond" />
+            <text x="210" y="99" class="atom-o" text-anchor="middle">O</text>
+            <line x1="225" y1="92" x2="265" y2="92" class="bond" />
+            <text x="285" y="99" class="atom-r" text-anchor="middle">R'</text>
+          </svg>
+        `
+      },
+      {
+        priority: 4,
+        names: ['산 할로젠화물', '산 할로겐화물', '산할로젠화물', '산할로겐화물', 'acyl halide', 'acid halide'],
+        primaryName: '산 할로젠화물 (Acyl halide)',
+        condensed: 'R-C(=O)-X (X = F, Cl, Br, I)',
+        suffix: ['-oyl halide', 'oyl halide'],
+        prefix: ['halocarbonyl-', 'halocarbonyl', 'haloformyl-', 'haloformyl', '없음', '-', 'none'],
+        notes: '반응성이 매우 큰 카복실산 할로젠화 유도체입니다.',
+        svg: `
+          <svg viewBox="0 0 320 120" class="h-24 sm:h-28 max-w-full">
+            <style>
+              .atom { fill: #f8fafc; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-r { fill: #38bdf8; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-o { fill: #f43f5e; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-x { fill: #a855f7; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .bond { stroke: #cbd5e1; stroke-width: 3.5; stroke-linecap: round; }
+            </style>
+            <text x="45" y="80" class="atom-r" text-anchor="middle">R</text>
+            <line x1="68" y1="73" x2="120" y2="73" class="bond" />
+            <text x="135" y="80" class="atom" text-anchor="middle">C</text>
+            <!-- =O -->
+            <line x1="140" y1="58" x2="175" y2="28" class="bond" />
+            <line x1="148" y1="67" x2="183" y2="37" class="bond" />
+            <text x="195" y="30" class="atom-o" text-anchor="middle">O</text>
+            <!-- - X -->
+            <line x1="150" y1="78" x2="200" y2="92" class="bond" />
+            <text x="218" y="99" class="atom-x" text-anchor="middle">X</text>
+          </svg>
+        `
+      },
+      {
+        priority: 5,
+        names: ['아마이드', '아미드', 'amide'],
+        primaryName: '아마이드 (Amide)',
+        condensed: 'R-C(=O)-NH2 (또는 -NHR, -NR2)',
+        suffix: ['-amide', 'amide'],
+        prefix: ['amido-', 'amido', 'carbamoyl-', 'carbamoyl', '없음', '-', 'none'],
+        notes: '펩타이드 결합의 핵심 골격입니다.',
+        svg: `
+          <svg viewBox="0 0 320 120" class="h-24 sm:h-28 max-w-full">
+            <style>
+              .atom { fill: #f8fafc; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-r { fill: #38bdf8; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-o { fill: #f43f5e; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-n { fill: #3b82f6; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .bond { stroke: #cbd5e1; stroke-width: 3.5; stroke-linecap: round; }
+            </style>
+            <text x="45" y="80" class="atom-r" text-anchor="middle">R</text>
+            <line x1="68" y1="73" x2="120" y2="73" class="bond" />
+            <text x="135" y="80" class="atom" text-anchor="middle">C</text>
+            <!-- =O -->
+            <line x1="140" y1="58" x2="175" y2="28" class="bond" />
+            <line x1="148" y1="67" x2="183" y2="37" class="bond" />
+            <text x="195" y="30" class="atom-o" text-anchor="middle">O</text>
+            <!-- - NH2 -->
+            <line x1="150" y1="78" x2="195" y2="92" class="bond" />
+            <text x="235" y="99" class="atom-n" text-anchor="middle">NH₂</text>
+          </svg>
+        `
+      },
+      {
+        priority: 6,
+        names: ['나이트라일', '나이트릴', '니트릴', 'nitrile'],
+        primaryName: '나이트라일 (Nitrile)',
+        condensed: 'R-C≡N',
+        suffix: ['-nitrile', 'nitrile'],
+        prefix: ['cyano-', 'cyano'],
+        notes: '탄소와 질소 간의 강력한 삼중결합을 가집니다.',
+        svg: `
+          <svg viewBox="0 0 300 100" class="h-20 sm:h-24 max-w-full">
+            <style>
+              .atom { fill: #f8fafc; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-r { fill: #38bdf8; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-n { fill: #3b82f6; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .bond { stroke: #cbd5e1; stroke-width: 3.5; stroke-linecap: round; }
+            </style>
+            <text x="45" y="58" class="atom-r" text-anchor="middle">R</text>
+            <line x1="70" y1="50" x2="125" y2="50" class="bond" />
+            <text x="145" y="58" class="atom" text-anchor="middle">C</text>
+            <!-- Triple Bond -->
+            <line x1="168" y1="42" x2="218" y2="42" class="bond" />
+            <line x1="168" y1="50" x2="218" y2="50" class="bond" />
+            <line x1="168" y1="58" x2="218" y2="58" class="bond" />
+            <text x="240" y="58" class="atom-n" text-anchor="middle">N</text>
+          </svg>
+        `
+      },
+      {
+        priority: 7,
+        names: ['알데하이드', '알데히드', 'aldehyde'],
+        primaryName: '알데하이드 (Aldehyde)',
+        condensed: 'R-C(=O)H (R-CHO)',
+        suffix: ['-al', 'al'],
+        prefix: ['oxo-', 'oxo', '-oxo-', 'formyl-', 'formyl'],
+        notes: '말단에 위치하는 카보닐기입니다.',
+        svg: `
+          <svg viewBox="0 0 300 120" class="h-24 sm:h-28 max-w-full">
+            <style>
+              .atom { fill: #f8fafc; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-r { fill: #38bdf8; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-o { fill: #f43f5e; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .bond { stroke: #cbd5e1; stroke-width: 3.5; stroke-linecap: round; }
+            </style>
+            <text x="45" y="80" class="atom-r" text-anchor="middle">R</text>
+            <line x1="68" y1="73" x2="120" y2="73" class="bond" />
+            <text x="135" y="80" class="atom" text-anchor="middle">C</text>
+            <!-- =O -->
+            <line x1="140" y1="58" x2="175" y2="28" class="bond" />
+            <line x1="148" y1="67" x2="183" y2="37" class="bond" />
+            <text x="195" y="30" class="atom-o" text-anchor="middle">O</text>
+            <!-- - H -->
+            <line x1="150" y1="78" x2="195" y2="92" class="bond" />
+            <text x="210" y="99" class="atom-margin" text-anchor="middle">H</text>
+          </svg>
+        `
+      },
+      {
+        priority: 8,
+        names: ['케톤', 'ketone'],
+        primaryName: '케톤 (Ketone)',
+        condensed: "R-C(=O)-R'",
+        suffix: ['-one', 'one'],
+        prefix: ['oxo-', 'oxo', '-oxo-'],
+        notes: '탄소 골격 내부(사슬 중간)에 위치하는 카보닐기입니다.',
+        svg: `
+          <svg viewBox="0 0 300 120" class="h-24 sm:h-28 max-w-full">
+            <style>
+              .atom { fill: #f8fafc; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-r { fill: #38bdf8; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-o { fill: #f43f5e; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .bond { stroke: #cbd5e1; stroke-width: 3.5; stroke-linecap: round; }
+            </style>
+            <text x="45" y="80" class="atom-r" text-anchor="middle">R</text>
+            <line x1="68" y1="73" x2="120" y2="73" class="bond" />
+            <text x="135" y="80" class="atom" text-anchor="middle">C</text>
+            <!-- =O -->
+            <line x1="130" y1="58" x2="130" y2="28" class="bond" />
+            <line x1="140" y1="58" x2="140" y2="28" class="bond" />
+            <text x="135" y="24" class="atom-o" text-anchor="middle">O</text>
+            <!-- - R' -->
+            <line x1="152" y1="73" x2="205" y2="73" class="bond" />
+            <text x="228" y="80" class="atom-r" text-anchor="middle">R'</text>
+          </svg>
+        `
+      },
+      {
+        priority: 9,
+        names: ['알코올', '알콜', 'alcohol'],
+        primaryName: '알코올 (Alcohol)',
+        condensed: 'R-OH (R-C-OH)',
+        suffix: ['-ol', 'ol'],
+        prefix: ['hydroxy-', 'hydroxy'],
+        notes: '하이드록시기가 탄소에 결합한 작용기입니다.',
+        svg: `
+          <svg viewBox="0 0 280 100" class="h-20 sm:h-24 max-w-full">
+            <style>
+              .atom { fill: #f8fafc; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-r { fill: #38bdf8; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-o { fill: #f43f5e; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .bond { stroke: #cbd5e1; stroke-width: 3.5; stroke-linecap: round; }
+            </style>
+            <text x="50" y="58" class="atom-r" text-anchor="middle">R</text>
+            <line x1="75" y1="50" x2="140" y2="50" class="bond" />
+            <text x="180" y="58" class="atom-o" text-anchor="middle">OH</text>
+          </svg>
+        `
+      },
+      {
+        priority: 10,
+        names: ['싸이올', '티올', 'thiol'],
+        primaryName: '싸이올 (Thiol)',
+        condensed: 'R-SH',
+        suffix: ['-thiol', 'thiol'],
+        prefix: ['sulfanyl-', 'sulfanyl', 'sulfenyl-', 'mercapto-', 'mercapto'],
+        notes: '알코올의 산소 원자가 황(S)으로 치환된 형태입니다.',
+        svg: `
+          <svg viewBox="0 0 280 100" class="h-20 sm:h-24 max-w-full">
+            <style>
+              .atom-r { fill: #38bdf8; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-s { fill: #eab308; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .bond { stroke: #cbd5e1; stroke-width: 3.5; stroke-linecap: round; }
+            </style>
+            <text x="50" y="58" class="atom-r" text-anchor="middle">R</text>
+            <line x1="75" y1="50" x2="140" y2="50" class="bond" />
+            <text x="180" y="58" class="atom-s" text-anchor="middle">SH</text>
+          </svg>
+        `
+      },
+      {
+        priority: 11,
+        names: ['아민', 'amine'],
+        primaryName: '아민 (Amine)',
+        condensed: 'R-NH2 (R-NH-R)',
+        suffix: ['-amine', 'amine'],
+        prefix: ['amino-', 'amino'],
+        notes: '암모니아(NH3)의 수소가 알킬기로 치환된 유도체입니다.',
+        svg: `
+          <svg viewBox="0 0 280 100" class="h-20 sm:h-24 max-w-full">
+            <style>
+              .atom-r { fill: #38bdf8; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-n { fill: #3b82f6; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .bond { stroke: #cbd5e1; stroke-width: 3.5; stroke-linecap: round; }
+            </style>
+            <text x="50" y="58" class="atom-r" text-anchor="middle">R</text>
+            <line x1="75" y1="50" x2="135" y2="50" class="bond" />
+            <text x="185" y="58" class="atom-n" text-anchor="middle">NH₂</text>
+          </svg>
+        `
+      },
+      {
+        priority: 15,
+        names: ['에터', '에테르', 'ether'],
+        primaryName: '에터 (Ether)',
+        condensed: "R-O-R'",
+        suffix: ['없음', '-', 'none'],
+        prefix: ['-oxy-', 'oxy-', 'oxy', 'alkoxy-', 'alkoxy'],
+        notes: '산소 원자가 두 개의 알킬기 사이에 연결되어 있습니다.',
+        svg: `
+          <svg viewBox="0 0 300 100" class="h-20 sm:h-24 max-w-full">
+            <style>
+              .atom-r { fill: #38bdf8; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-o { fill: #f43f5e; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .bond { stroke: #cbd5e1; stroke-width: 3.5; stroke-linecap: round; }
+            </style>
+            <text x="50" y="58" class="atom-r" text-anchor="middle">R</text>
+            <line x1="75" y1="50" x2="125" y2="50" class="bond" />
+            <text x="150" y="58" class="atom-o" text-anchor="middle">O</text>
+            <line x1="175" y1="50" x2="225" y2="50" class="bond" />
+            <text x="250" y="58" class="atom-r" text-anchor="middle">R'</text>
+          </svg>
+        `
+      },
+      {
+        priority: 16,
+        names: ['할로젠화물', '할로겐화물', '알킬 할로젠화물', '알킬 할로겐화물', 'alkyl halide', 'halide'],
+        primaryName: '할로젠화물 (Alkyl halide)',
+        condensed: 'R-X (X = F, Cl, Br, I)',
+        suffix: ['없음', '-', 'none'],
+        prefix: ['-o', 'o', 'halo-', 'halo', 'fluoro-', 'chloro-', 'bromo-', 'iodo-'],
+        notes: '필기 표기(-o)를 기본 접두사로 사용하며, 항상 접두사 치환기로만 명명됩니다.',
+        svg: `
+          <svg viewBox="0 0 280 100" class="h-20 sm:h-24 max-w-full">
+            <style>
+              .atom-r { fill: #38bdf8; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-x { fill: #a855f7; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .bond { stroke: #cbd5e1; stroke-width: 3.5; stroke-linecap: round; }
+            </style>
+            <text x="60" y="58" class="atom-r" text-anchor="middle">R</text>
+            <line x1="90" y1="50" x2="160" y2="50" class="bond" />
+            <text x="195" y="58" class="atom-x" text-anchor="middle">X</text>
+          </svg>
+        `
+      },
+      {
+        priority: 17,
+        names: ['나이트롤화합물', '나이트롤', '나이트로화합물', 'nitro compound', 'nitro'],
+        primaryName: '나이트롤화합물 (Nitro compound)',
+        condensed: 'R-NO2',
+        suffix: ['없음', '-', 'none'],
+        prefix: ['nitro-', 'nitro', '-nitro-'],
+        notes: '질소에 두 산소가 결합된 작용기로, 접두사 nitro-로만 명명됩니다.',
+        svg: `
+          <svg viewBox="0 0 300 110" class="h-20 sm:h-24 max-w-full">
+            <style>
+              .atom-r { fill: #38bdf8; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-n { fill: #3b82f6; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .atom-o { fill: #f43f5e; font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 700; }
+              .bond { stroke: #cbd5e1; stroke-width: 3.5; stroke-linecap: round; }
+            </style>
+            <text x="45" y="62" class="atom-r" text-anchor="middle">R</text>
+            <line x1="70" y1="54" x2="125" y2="54" class="bond" />
+            <text x="145" y="62" class="atom-n" text-anchor="middle">N⁺</text>
+            <!-- N=O and N-O(-) -->
+            <line x1="165" y1="46" x2="205" y2="24" class="bond" />
+            <line x1="172" y1="56" x2="212" y2="34" class="bond" />
+            <text x="230" y="26" class="atom-o" text-anchor="middle">O</text>
+            <line x1="165" y1="64" x2="210" y2="88" class="bond" />
+            <text x="235" y="96" class="atom-o" text-anchor="middle">O⁻</text>
+          </svg>
+        `
+      }
+    ];
+
+    /* 12-14 탄소 다중 결합 요약 참조용 */
+    const ALL_REFERENCE_GROUPS = [
+      ...FUNCTIONAL_GROUPS,
+      {
+        priority: 12,
+        names: ['알켄', 'alkene'],
+        primaryName: '알켄 (Alkene, C=C)',
+        condensed: 'R-CH=CH-R',
+        suffix: ['-ene', 'ene'],
+        prefix: ['alkenyl-', 'alkenyl', '없음', '-'],
+        notes: '탄소-탄소 이중결합'
+      },
+      {
+        priority: 13,
+        names: ['알카인', 'alkyne'],
+        primaryName: '알카인 (Alkyne, C≡C)',
+        condensed: 'R-C≡C-R',
+        suffix: ['-yne', 'yne'],
+        prefix: ['alkynyl-', 'alkynyl', '없음', '-'],
+        notes: '탄소-탄소 삼중결합'
+      },
+      {
+        priority: 14,
+        names: ['알케인', 'alkane'],
+        primaryName: '알케인 (Alkane, C-C)',
+        condensed: 'R-CH2-CH3',
+        suffix: ['-ane', 'ane'],
+        prefix: ['alkyl-', 'alkyl', '없음', '-'],
+        notes: '탄소-탄소 단일결합'
+      }
+    ].sort((a, b) => a.priority - b.priority);
+
+    let currentItem = null;
+    let lastIndex = -1;
+    let totalAttempts = 0;
+    let correctCount = 0;
+    let currentStreak = 0;
+    let maxStreak = 0;
+    let isAnswerChecked = false;
+
+    // 문자열 표준화 (공백, 하이픈, 대소문자 제거)
+    function normalize(str) {
+      if (!str) return '';
+      return str
+        .toLowerCase()
+        .replace(/[\s\-_~,\.\(\)]/g, '')
+        .trim();
+    }
+
+    const svgContainer = document.getElementById('structureSvgContainer');
+    const condensedFormula = document.getElementById('condensedFormula');
+    const questionNumDisplay = document.getElementById('questionNumDisplay');
+    const hintBanner = document.getElementById('hintBanner');
+    const hintText = document.getElementById('hintText');
+    const hintBtn = document.getElementById('hintBtn');
+
+    const inputName = document.getElementById('inputName');
+    const inputPriority = document.getElementById('inputPriority');
+    const inputSuffix = document.getElementById('inputSuffix');
+    const inputPrefix = document.getElementById('inputPrefix');
+
+    const nameStatus = document.getElementById('nameStatus');
+    const priorityStatus = document.getElementById('priorityStatus');
+    const suffixStatus = document.getElementById('suffixStatus');
+    const prefixStatus = document.getElementById('prefixStatus');
+
+    const submitBtn = document.getElementById('submitBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const feedbackBox = document.getElementById('feedbackBox');
+
+    const totalCountEl = document.getElementById('totalCount');
+    const streakCountEl = document.getElementById('streakCount');
+    const bestStreakEl = document.getElementById('bestStreak');
+    const accuracyRateEl = document.getElementById('accuracyRate');
+
+    const summaryBtn = document.getElementById('summaryBtn');
+    const summaryModal = document.getElementById('summaryModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const modalOkBtn = document.getElementById('modalOkBtn');
+    const summaryTableBody = document.getElementById('summaryTableBody');
+    const resetStatsBtn = document.getElementById('resetStatsBtn');
+
+    function loadNextQuestion() {
+      isAnswerChecked = false;
+
+      // 이전 문제와 중복 방지 랜덤 선택
+      let newIdx;
+      do {
+        newIdx = Math.floor(Math.random() * FUNCTIONAL_GROUPS.length);
+      } while (newIdx === lastIndex && FUNCTIONAL_GROUPS.length > 1);
+      
+      lastIndex = newIdx;
+      currentItem = FUNCTIONAL_GROUPS[newIdx];
+
+      // 화면 업데이트
+      questionNumDisplay.textContent = totalAttempts + 1;
+      svgContainer.innerHTML = currentItem.svg;
+      condensedFormula.textContent = currentItem.condensed;
+
+      // 힌트 리셋
+      hintBanner.classList.add('hidden');
+
+      // 입력란 리셋 및 포커스
+      inputName.value = '';
+      inputPriority.value = '';
+      inputSuffix.value = '';
+      inputPrefix.value = '';
+
+      resetInputStyles();
+
+      // 버튼 토글
+      submitBtn.classList.remove('hidden');
+      nextBtn.classList.add('hidden');
+      feedbackBox.classList.add('hidden');
+      feedbackBox.innerHTML = '';
+
+      inputName.focus();
+    }
+
+    function resetInputStyles() {
+      const inputs = [inputName, inputPriority, inputSuffix, inputPrefix];
+      inputs.forEach(input => {
+        input.className = "w-full bg-slate-900 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition";
+      });
+      nameStatus.textContent = '';
+      priorityStatus.textContent = '';
+      suffixStatus.textContent = '';
+      prefixStatus.textContent = '';
+    }
+
+    function checkAnswer() {
+      if (isAnswerChecked) return;
+
+      const userName = inputName.value.trim();
+      const userPriority = parseInt(inputPriority.value.trim(), 10);
+      const userSuffix = inputSuffix.value.trim();
+      const userPrefix = inputPrefix.value.trim();
+
+      // 유연한 매칭 검사
+      const normName = normalize(userName);
+      const isNameCorrect = currentItem.names.some(n => normalize(n) === normName);
+
+      const isPriorityCorrect = userPriority === currentItem.priority;
+
+      const normSuffix = normalize(userSuffix);
+      const isSuffixCorrect = currentItem.suffix.some(s => {
+        const ns = normalize(s);
+        if ((ns === '없음' || ns === 'none' || ns === '') && (normSuffix === '없음' || normSuffix === 'none' || normSuffix === '')) {
+          return true;
+        }
+        return ns === normSuffix;
+      });
+
+      const normPrefix = normalize(userPrefix);
+      const isPrefixCorrect = currentItem.prefix.some(p => {
+        const np = normalize(p);
+        if ((np === '없음' || np === 'none' || np === '') && (normPrefix === '없음' || normPrefix === 'none' || normPrefix === '')) {
+          return true;
+        }
+        return np === normPrefix;
+      });
+
+      const allCorrect = isNameCorrect && isPriorityCorrect && isSuffixCorrect && isPrefixCorrect;
+
+      // 필드별 시각적 피드백
+      applyFieldStatus(inputName, nameStatus, isNameCorrect);
+      applyFieldStatus(inputPriority, priorityStatus, isPriorityCorrect);
+      applyFieldStatus(inputSuffix, suffixStatus, isSuffixCorrect);
+      applyFieldStatus(inputPrefix, prefixStatus, isPrefixCorrect);
+
+      // 통계 업데이트
+      totalAttempts++;
+      if (allCorrect) {
+        correctCount++;
+        currentStreak++;
+        if (currentStreak > maxStreak) maxStreak = currentStreak;
+      } else {
+        currentStreak = 0;
+      }
+
+      updateStatsUI();
+
+      // 정답/오답 해설 박스 표시
+      showFeedbackCard(allCorrect);
+
+      isAnswerChecked = true;
+      submitBtn.classList.add('hidden');
+      nextBtn.classList.remove('hidden');
+      nextBtn.focus();
+    }
+
+    function applyFieldStatus(inputElem, statusElem, isCorrect) {
+      if (isCorrect) {
+        inputElem.classList.remove('border-slate-700', 'border-red-500');
+        inputElem.classList.add('border-emerald-500', 'bg-emerald-950/20');
+        statusElem.innerHTML = '<span class="text-emerald-400 font-bold"><i class="fa-solid fa-check"></i> 정답</span>';
+      } else {
+        inputElem.classList.remove('border-slate-700', 'border-emerald-500');
+        inputElem.classList.add('border-red-500', 'bg-red-950/20');
+        statusElem.innerHTML = '<span class="text-red-400 font-bold"><i class="fa-solid fa-xmark"></i> 오답</span>';
+      }
+    }
+
+    function showFeedbackCard(allCorrect) {
+      feedbackBox.classList.remove('hidden');
+      
+      const suffixDisplay = currentItem.suffix[0] === '없음' ? '없음' : currentItem.suffix[0];
+      const prefixDisplay = currentItem.prefix[0] === '없음' ? '없음' : currentItem.prefix[0];
+
+      if (allCorrect) {
+        feedbackBox.className = "w-full mt-4 p-4 rounded-xl border border-emerald-500/40 bg-emerald-950/30 text-emerald-100 flex flex-col gap-2";
+        feedbackBox.innerHTML = `
+          <div class="flex items-center gap-2 font-bold text-base text-emerald-300">
+            <i class="fa-solid fa-circle-check text-xl"></i>
+            <span>완벽한 정답입니다! (${currentItem.primaryName})</span>
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">${currentItem.notes}</p>
+        `;
+      } else {
+        feedbackBox.className = "w-full mt-4 p-4 rounded-xl border border-rose-500/40 bg-rose-950/30 text-rose-100 flex flex-col gap-2.5";
+        feedbackBox.innerHTML = `
+          <div class="flex items-center justify-between font-bold text-sm sm:text-base text-rose-300">
+            <span class="flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> 오답이 있습니다. 정답을 확인하세요:</span>
+            <span class="text-xs bg-rose-900/60 px-2.5 py-0.5 rounded-full border border-rose-700">우선순위 #${currentItem.priority}</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-slate-900/80 p-3 rounded-lg border border-slate-800">
+            <div>
+              <span class="text-slate-400 block text-[11px]">작용기 명칭</span>
+              <strong class="text-white">${currentItem.primaryName}</strong>
+            </div>
+            <div>
+              <span class="text-slate-400 block text-[11px]">우선순위 번호</span>
+              <strong class="text-teal-400 font-mono text-sm">${currentItem.priority}번</strong>
+            </div>
+            <div>
+              <span class="text-slate-400 block text-[11px]">접미사 (Suffix)</span>
+              <strong class="text-amber-300 font-mono">${suffixDisplay}</strong>
+            </div>
+            <div>
+              <span class="text-slate-400 block text-[11px]">접두사 (Prefix)</span>
+              <strong class="text-indigo-300 font-mono">${prefixDisplay}</strong>
+            </div>
+          </div>
+          <p class="text-xs text-slate-300"><i class="fa-solid fa-circle-info text-teal-400 mr-1"></i> ${currentItem.notes}</p>
+        `;
+      }
+    }
+
+    function updateStatsUI() {
+      totalCountEl.textContent = totalAttempts;
+      streakCountEl.textContent = `${currentStreak} 🔥`;
+      bestStreakEl.textContent = maxStreak;
+      const rate = totalAttempts > 0 ? Math.round((correctCount / totalAttempts) * 100) : 0;
+      accuracyRateEl.textContent = `${rate}%`;
+    }
+
+    hintBtn.addEventListener('click', () => {
+      if (!currentItem) return;
+      hintBanner.classList.remove('hidden');
+      const firstChar = currentItem.names[0].charAt(0);
+      hintText.innerHTML = `힌트: 첫 글자 <strong>[${firstChar}]</strong> / 우선순위 범위: <strong>${Math.max(1, currentItem.priority - 2)} ~ ${Math.min(17, currentItem.priority + 2)}번</strong> 사이`;
+    });
+
+    document.getElementById('quizForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!isAnswerChecked) {
+        checkAnswer();
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      loadNextQuestion();
+    });
+
+    // 스페이스바 또는 엔터로 신속하게 다음 문제 이동
+    window.addEventListener('keydown', (e) => {
+      if (isAnswerChecked && (e.code === 'Space' || e.key === 'Enter')) {
+        // 모달이 열려있지 않을 때만 동작
+        if (summaryModal.classList.contains('hidden')) {
+          e.preventDefault();
+          loadNextQuestion();
+        }
+      }
+    });
+
+    function populateSummaryTable() {
+      summaryTableBody.innerHTML = '';
+      ALL_REFERENCE_GROUPS.forEach(g => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-800/40 transition";
+        
+        const suffixStr = Array.isArray(g.suffix) ? g.suffix[0] : (g.suffix || '-');
+        const prefixStr = Array.isArray(g.prefix) ? g.prefix[0] : (g.prefix || '-');
+
+        tr.innerHTML = `
+          <td class="py-2.5 px-3 sm:px-4 text-center font-bold font-mono text-teal-400 bg-slate-900/40">${g.priority}</td>
+          <td class="py-2.5 px-3 sm:px-4 font-medium text-white">${g.primaryName || g.names[0]}</td>
+          <td class="py-2.5 px-3 sm:px-4 font-mono text-slate-400 text-xs">${g.condensed}</td>
+          <td class="py-2.5 px-3 sm:px-4 font-mono text-amber-300 text-xs">${suffixStr}</td>
+          <td class="py-2.5 px-3 sm:px-4 font-mono text-indigo-300 text-xs">${prefixStr}</td>
+        `;
+        summaryTableBody.appendChild(tr);
+      });
+    }
+
+    summaryBtn.addEventListener('click', () => {
+      populateSummaryTable();
+      summaryModal.classList.remove('hidden');
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+      summaryModal.classList.add('hidden');
+    });
+
+    modalOkBtn.addEventListener('click', () => {
+      summaryModal.classList.add('hidden');
+    });
+
+    summaryModal.addEventListener('click', (e) => {
+      if (e.target === summaryModal) {
+        summaryModal.classList.add('hidden');
+      }
+    });
+
+    // 통계 초기화
+    resetStatsBtn.addEventListener('click', () => {
+      totalAttempts = 0;
+      correctCount = 0;
+      currentStreak = 0;
+      maxStreak = 0;
+      updateStatsUI();
+      loadNextQuestion();
+    });
+
+    // 최초 로드 실행
+    window.addEventListener('DOMContentLoaded', () => {
+      loadNextQuestion();
+    });
+  </script>
+</body>
+</html>
